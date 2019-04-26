@@ -1,2 +1,2 @@
-# jacked
-Python on roids!
+# jacked ~ *Python on roids*
+A tiny dependency injection framework done right.
