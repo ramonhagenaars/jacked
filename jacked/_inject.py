@@ -9,6 +9,7 @@ from collections import ChainMap
 from functools import partial
 from typing import List, Dict, Callable
 from jacked import _state_holder
+from jacked._compatibility_impl import get_naked_class
 from jacked._injectable import Injectable
 
 
@@ -49,7 +50,7 @@ def _decorator(
 
 def _check_decorated(decorated: callable):
     if isinstance(decorated, type):
-        raise Exception('The inject decorator can be used on callables only.')  # TODO use custom exception
+        raise Exception('The inject decorator can be used on callables only.')
 
 
 def _wrapper(
@@ -69,11 +70,11 @@ def _get_arguments(
     result = {}
     for param_name in signature.parameters:
         if param_name in ('self', 'cls'):
-            continue  # TODO see if this can be better
+            continue
         candidates = _get_candidates(signature.parameters[param_name],
                                      state_holder)
         if not candidates:
-            raise Exception('No suitable candidates.')  # TODO use custom exception
+            raise Exception('No suitable candidates.')
 
         result[param_name] = _choose_candidate(candidates)
     return result
@@ -88,7 +89,7 @@ def _get_candidates(
 
 
 def _choose_candidate(candidates: List[object]) -> object:
-    return candidates[0]  # TODO
+    return candidates[0]
 
 
 def _match(
@@ -97,18 +98,18 @@ def _match(
         state_holder: _state_holder.StateHolder) -> object:
     hint = parameter.annotation
 
-    # TODO: move matchers to separate modules.
-    if issubclass(hint, type):
+    naked_hint = get_naked_class(hint)
+    if issubclass(naked_hint, type):
         # The hint is a generic type, so we're injecting a type.
-        cls = hint.__args__[0]  # TODO naive
+        cls = hint.__args__[0]
         if issubclass(injectable.subject, cls):
             return injectable.subject
-    elif issubclass(hint, list):
-        sub_hint = hint.__args__[0]  # TODO naive
+    elif issubclass(naked_hint, list):
+        sub_hint = hint.__args__[0]
         parameter = inspect.Parameter(name='_', kind=1, annotation=sub_hint)
         return _get_candidates(parameter, state_holder)
-    elif issubclass(hint, object):
+    elif issubclass(naked_hint, object):
         # The hint is a regular type, so we're expecting to inject an instance.
         if issubclass(injectable.subject, hint):
             matching_type = injectable.subject
-            return matching_type()  # TODO try except
+            return matching_type()
