@@ -42,6 +42,8 @@ class TestInject(TestCase):
 
     @inject()
     def test_inject_multiple(self, cat1: Cat, cat2: Cat):
+        self.assertEqual('meouw', cat1.sound())
+        self.assertEqual('meouw', cat2.sound())
         self.assertNotEqual(cat1, cat2)
 
     @inject()
@@ -80,9 +82,10 @@ class TestInject(TestCase):
 
         p = Path(__file__).parent.parent.joinpath('test_resources/injectables')
         discoveries = discover(str(p))
+        module_names = [module.__name__ for module in discoveries]
 
-        self.assertTrue('red' in discoveries)
-        self.assertTrue('green' in discoveries)
-        self.assertTrue('blue' in discoveries)
+        self.assertTrue('red' in module_names)
+        self.assertTrue('green' in module_names)
+        self.assertTrue('blue' in module_names)
 
         get_all_colors()

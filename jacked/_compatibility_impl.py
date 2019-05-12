@@ -5,6 +5,7 @@ This module contains functionality for supporting the compatibility with
 multiple Python versions.
 """
 import sys
+import typing
 
 
 def get_naked_class(cls: type) -> type:
@@ -16,3 +17,12 @@ def get_naked_class(cls: type) -> type:
     if sys.version_info[1] in (5, 6):
         attr = '__extra__'
     return getattr(cls, attr, cls)
+
+
+def get_type_hints(func: callable):
+    # Python3.5: get_type_hints raises on classes without explicit constructor
+    try:
+        result = typing.get_type_hints(func)
+    except AttributeError:
+        result = {}
+    return result
