@@ -16,6 +16,7 @@ setup(
     url='https://github.com/ramonhagenaars/jacked',
     packages=[
         'jacked',
+        'jacked.matchers'
     ],
     test_suite='tests',
     zip_safe=False,

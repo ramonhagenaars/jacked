@@ -8,9 +8,11 @@ import inspect
 from collections import ChainMap
 from functools import partial, lru_cache
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Any
 from jacked import _state_holder
+from jacked._compatibility_impl import get_naked_class
 from jacked._discover import discover
+from jacked._exceptions import InjectionError, InvalidUsageError
 from jacked._injectable import Injectable
 from jacked.matchers._base_matcher import BaseMatcher
 
@@ -56,7 +58,24 @@ def _check_decorated(decorated: callable):
     # This function validates the decorated object and raises upon an invalid
     # decoration.
     if isinstance(decorated, type):
-        raise Exception('The inject decorator can be used on callables only.')
+        raise InvalidUsageError('The inject decorator can be used on '
+                                'callables only.')
+    params = inspect.signature(decorated).parameters
+    for param_name in params:
+        hint = params[param_name].annotation
+        if hint != inspect.Parameter.empty:
+            _check_hint(hint)
+
+
+def _check_hint(hint: Any):
+    # TODO deze moet ik nog maken!
+    try:
+        naked_class = get_naked_class(hint)
+        if not isinstance(naked_class, type) and not isinstance(naked_class, str):
+            raise InvalidUsageError('TODO1')
+    except TypeError:
+        raise
+        raise InvalidUsageError('TODO2')
 
 
 def _wrapper(
@@ -67,9 +86,17 @@ def _wrapper(
     # This function is wrapped around the decorated object. It will collect
     # arguments and inject them to `decorated` by providing these arguments.
     signature = inspect.signature(decorated)
+
+    if args:
+        # If there are any ordered parameters given, filter them out of the
+        # signature to prevent the search for injection candidates:
+        filtered_params = list(signature.parameters.values())[len(args):]
+        signature = inspect.Signature(filtered_params)
+
     # Collect the arguments for injection:
     arguments = _collect_arguments(signature, state_holder)
-    kwargs_ = ChainMap(kwargs_, arguments)
+    kwargs_ = ChainMap(kwargs_, arguments)  # Note: kwargs_ takes precedence.
+
     # Now all arguments are collected, "inject" them into `decorated`:
     return decorated(*args, **kwargs_)
 
@@ -83,14 +110,17 @@ def _collect_arguments(
     for param_name in signature.parameters:
         if param_name in ('self', 'cls'):
             continue
+        param = signature.parameters[param_name]
         # Get all candidates that could be injected according to `signature`:
-        candidates = _get_candidates(signature.parameters[param_name],
-                                     state_holder)
+        candidates = _get_candidates(param, state_holder)
         if not candidates:
-            raise Exception('No suitable candidates.')
-
-        # If there are multiple candidates, select one:
-        result[param_name] = _choose_candidate(candidates)
+            result[param_name] = param.default
+            if param.default is inspect.Parameter.empty:
+                raise InjectionError('No suitable candidates for "{}".'
+                                     .format(param_name), param)
+        else:
+            # If there are multiple candidates, select one:
+            result[param_name] = _choose_candidate(candidates)
     return result
 
 
@@ -118,6 +148,7 @@ def _match(
     # there appears to be a match, return what is to be injected (e.g. an
     # instance of a class, a class itself, ...). If no match, return `None`.
     hint = parameter.annotation
+
     for matcher in _get_matchers():
         if matcher.can_match(hint):
             # Match or no match, return anyway:

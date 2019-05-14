@@ -12,7 +12,7 @@ class ListMatcher(BaseMatcher):
             hint: object,
             injectable: Injectable,
             state_holder: StateHolder):
-        sub_hint = hint.__args__[0]  # TODO now assuming List!!!
+        sub_hint = getattr(hint, '__args__', [None])[0]
         parameter = inspect.Parameter(name='_', kind=1,
                                       annotation=sub_hint)
         return _get_candidates(parameter, state_holder)
