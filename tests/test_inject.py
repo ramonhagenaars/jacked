@@ -217,11 +217,6 @@ class TestInject(TestCase):
         def _func7(callable: Callable[[Animal], str]):
             self.assertEqual(func_cat_str, callable)
 
-        # @inject()
-        # def _func8(callable: Callable[[List[List[List[Animal]]]], str]):
-        #     self.assertEqual(func_cat_str, callable)
-        # TODO subtypes van lists, of sub sub types, etc!!!
-
         _func1()
         _func2()
         _func3()
@@ -266,5 +261,3 @@ class TestInject(TestCase):
         self.assertTrue('blue' in module_names)
 
         get_all_colors()
-
-    # TODO: add a test with a failing import for discovery

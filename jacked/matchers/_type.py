@@ -16,7 +16,7 @@ class TypeMatcher(BaseMatcher):
             hint: object,
             injectable: Injectable,
             container: Container):
-        cls = hint.__args__[0]  # TODO assumption!
+        cls = hint.__args__[0]
         if (inspect.isclass(injectable.subject)
                 and issubclass(injectable.subject, cls)):
             return injectable.subject

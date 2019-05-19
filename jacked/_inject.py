@@ -67,15 +67,7 @@ def _check_decorated(decorated: callable):
 
 
 def _check_hint(hint: Any):
-    # TODO deze moet ik nog maken!
-    pass
-    # try:
-    #     naked_class = get_naked_class(hint)
-    #     if not isinstance(naked_class, type) and not isinstance(naked_class, str):
-    #         raise InvalidUsageError('TODO1')
-    # except TypeError:
-    #     raise
-    #     raise InvalidUsageError('TODO2')
+    pass  # TODO implement this.
 
 
 def _wrapper(
@@ -131,7 +123,6 @@ def _get_candidates(
     # candidates.
     candidates = (_match(parameter, injectable, container)
                   for injectable in container.injectables)
-    # TODO raise if candidates is empty
     return [candidate for candidate in candidates if candidate]
 
 
