@@ -7,7 +7,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='jsons',
-    version='0.1.0',
+    version='1.0.0a',
     author='Ramon Hagenaars',
     author_email='ramon.hagenaars@gmail.com',
     description='Dependency injection for Python',
