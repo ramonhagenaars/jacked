@@ -13,7 +13,7 @@ class Container:
         self._subjects = set()
 
     def register(self, injectable: 'jacked.Injectable'):
-        if injectable.subject.__name__ not in self._subjects:
+        if injectable.name not in self._subjects:
             self._injectables.append(injectable)
             self._subjects.add(injectable.subject.__name__)
 

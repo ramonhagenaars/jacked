@@ -36,10 +36,24 @@ class Bird(Animal):
         return 'tweet'
 
 
+@injectable(name='Elephant', meta={'size': 'enormous', 'name': 'overridden'})
+class Mouse(Animal):
+    def sound(self):
+        return 'peep'
+
+
 @injectable(container=CUSTOM_CONTAINER)
 class Goat(Animal):
     def sound(self):
         return 'meh'
+
+
+# The same object injected in two different contains under different names.
+@injectable()
+@injectable(container=CUSTOM_CONTAINER, name='Kip')
+class Chicken(Animal):
+    def sound(self):
+        return 'tok'
 
 
 @injectable()
@@ -72,6 +86,11 @@ class TestInject(TestCase):
     def test_simple_injection(self, cat: Cat):
         self.assertEqual('meouw', cat.sound())
 
+    @inject()
+    def test_injection_name(self, mouse: Mouse):
+        self.assertEqual('Elephant', mouse.__meta__.name)
+        self.assertEqual('enormous', mouse.__meta__.size)
+
     @inject
     def test_simple_injection_without_parentheses(self, cat: Cat):
         self.assertEqual('meouw', cat.sound())
@@ -79,6 +98,19 @@ class TestInject(TestCase):
     @inject(container=CUSTOM_CONTAINER)
     def test_injection_with_different_container(self, animal: Animal):
         self.assertEqual('meh', animal.sound())
+
+    def test_injection_with_multiple_containers(self):
+
+        @inject(container=CUSTOM_CONTAINER)
+        def func1(chicken: Chicken):
+            self.assertEqual('Kip', chicken.__meta__['name'])
+
+        @inject()
+        def func2(chicken: Chicken):
+            self.assertEqual('Chicken', chicken.__meta__['name'])
+
+        func1()
+        func2()
 
     @inject()
     def test_inject_multiple(self, cat1: Cat, cat2: Cat):
@@ -96,6 +128,7 @@ class TestInject(TestCase):
         self.assertTrue('bark' in sounds)
         self.assertTrue('meouw' in sounds)
         self.assertTrue('tweet' in sounds)
+        self.assertTrue('peep' in sounds)
         self.assertTrue('meh' not in sounds)  # Different container.
 
     @inject()
