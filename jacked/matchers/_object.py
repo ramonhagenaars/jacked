@@ -1,3 +1,9 @@
+"""
+PRIVATE MODULE: do not import (from) it directly.
+
+This module contains the ``ObjectMatcher``class.
+"""
+import inspect
 from jacked._injectable import Injectable
 from jacked._state_holder import StateHolder
 from jacked.matchers._base_matcher import BaseMatcher
@@ -11,12 +17,12 @@ class ObjectMatcher(BaseMatcher):
             injectable: Injectable,
             state_holder: StateHolder):
         # The hint is a regular type, so we're expecting to inject an instance.
-        if issubclass(injectable.subject, hint):
-            matching_type = injectable.subject
-            return matching_type()
+        if (inspect.isclass(injectable.subject)
+                and issubclass(injectable.subject, hint)):
+            return injectable.subject()
 
     def _matching_type(self):
         return object
 
     def priority(self):
-        return 0
+        return 0  # The lowest priority.

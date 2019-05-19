@@ -52,6 +52,7 @@ def _decorator(
         name: str,
         state_holder: _state_holder.StateHolder,
         decorated: object) -> callable:
+    # This is the actual decorator that registers the decorated object.
     name_ = name or decorated.__name__
     injectable_inst = Injectable(decorated, name_)
     state_holder.register(injectable_inst)

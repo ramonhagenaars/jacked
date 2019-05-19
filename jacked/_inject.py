@@ -10,7 +10,6 @@ from functools import partial, lru_cache
 from pathlib import Path
 from typing import List, Dict, Any
 from jacked import _state_holder
-from jacked._compatibility_impl import get_naked_class
 from jacked._discover import discover
 from jacked._exceptions import InjectionError, InvalidUsageError
 from jacked._injectable import Injectable
@@ -21,7 +20,7 @@ def inject(
         decorated: callable = None,
         *,
         state_holder: _state_holder.StateHolder = _state_holder.DEFAULT
-):
+) -> callable:
     """
     Decorator that will inject all parameters that were not already explicitly
     provided.
@@ -69,13 +68,14 @@ def _check_decorated(decorated: callable):
 
 def _check_hint(hint: Any):
     # TODO deze moet ik nog maken!
-    try:
-        naked_class = get_naked_class(hint)
-        if not isinstance(naked_class, type) and not isinstance(naked_class, str):
-            raise InvalidUsageError('TODO1')
-    except TypeError:
-        raise
-        raise InvalidUsageError('TODO2')
+    pass
+    # try:
+    #     naked_class = get_naked_class(hint)
+    #     if not isinstance(naked_class, type) and not isinstance(naked_class, str):
+    #         raise InvalidUsageError('TODO1')
+    # except TypeError:
+    #     raise
+    #     raise InvalidUsageError('TODO2')
 
 
 def _wrapper(

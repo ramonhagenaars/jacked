@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Type, List
+from typing import Type, List, Callable, Any
 from unittest import TestCase
 from jacked import inject, injectable
 from jacked._discover import discover
@@ -30,6 +30,31 @@ class Cat(Animal):
 class Bird(Animal):
     def sound(self):
         return 'tweet'
+
+
+@injectable()
+def func_str_str(x: str) -> str:
+    return x.upper()
+
+
+@injectable()
+def func_int_str(x: int) -> str:
+    return str(x)
+
+
+@injectable()
+def func_empty_float() -> float:
+    return 42.0
+
+
+@injectable()
+def func_list_empty(x: list):
+    return x + [1, 2, 3]
+
+
+@injectable()
+def func_cat_str(cat: Cat) -> str:
+    return cat.sound()
 
 
 class TestInject(TestCase):
@@ -109,6 +134,53 @@ class TestInject(TestCase):
             @inject()
             class C:
                 pass
+
+    def test_inject_function(self):
+
+        @inject()
+        def _func1(callable_: Callable[[int], str]):
+            self.assertEqual(func_int_str, callable_)
+
+        @inject()
+        def _func2(callables: List[Callable[[str], str]]):
+            self.assertEqual(1, len(callables))
+            self.assertEqual('HELLO', callables[0]('hello'))
+
+        @inject()
+        def _func3(callable_: Callable[[], float]):
+            self.assertEqual(func_empty_float, callable_)
+
+        @inject()
+        def _func4(callables: List[Callable[[Any], str]]):
+            self.assertEqual(3, len(callables))
+            self.assertTrue(func_int_str in callables)
+            self.assertTrue(func_str_str in callables)
+
+        @inject()
+        def _func5(callables: List[Callable[[str], Any]]):
+            self.assertEqual(1, len(callables))
+            self.assertEqual(func_str_str, callables[0])
+
+        @inject()
+        def _func6(callable: Callable[[list], None]):
+            self.assertEqual(func_list_empty, callable)
+
+        @inject()
+        def _func7(callable: Callable[[Animal], str]):
+            self.assertEqual(func_cat_str, callable)
+
+        # @inject()
+        # def _func8(callable: Callable[[List[List[List[Animal]]]], str]):
+        #     self.assertEqual(func_cat_str, callable)
+        # TODO subtypes van lists, of sub sub types, etc!!!
+
+        _func1()
+        _func2()
+        _func3()
+        _func4()
+        _func5()
+        _func6()
+        _func7()
 
     def test_inject_fail(self):
 

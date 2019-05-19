@@ -1,3 +1,8 @@
+"""
+PRIVATE MODULE: do not import (from) it directly.
+
+This module contains the ``ListMatcher``class.
+"""
 import inspect
 from jacked._inject import _get_candidates
 from jacked._injectable import Injectable
@@ -19,6 +24,3 @@ class ListMatcher(BaseMatcher):
 
     def _matching_type(self):
         return list
-
-    def priority(self):
-        return 10

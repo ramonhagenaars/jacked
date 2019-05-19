@@ -17,18 +17,25 @@ def discover(directory: str = '.') -> List[Module]:
     :param directory: the directory in which modules are to be discovered.
     :return: a ``list`` of all discovered modules.
     """
-    path = Path(directory)
-    abspath = str(path.absolute())
-    sys.path.insert(0, abspath)
-
-    path_to_discover = path.joinpath('**/*.py')
-    paths = [Path(filename) for filename in
-             glob.iglob(str(path_to_discover), recursive=True)]
-
+    paths = _find_paths(directory, '**/*.py', True)
     return _import(paths)
 
 
+def _find_paths(directory: str, pattern: str, recursive: bool) -> List[Path]:
+    # Find all paths in the given directory with the given pattern and return
+    # them in a list.
+    path = Path(directory)
+    abspath = str(path.absolute())
+    sys.path.insert(0, abspath)
+    path_to_discover = path.joinpath(pattern)
+    paths = [Path(filename) for filename in
+             glob.iglob(str(path_to_discover), recursive=recursive)]
+    return paths
+
+
 def _import(paths: List[Path]) -> List[Module]:
+    # Import the given list of paths and return the Module instances of the
+    # successfully imported modules.
     result = []
     for p in paths:
         path_to_module = p.resolve().parent
