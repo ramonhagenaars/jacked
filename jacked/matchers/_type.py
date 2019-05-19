@@ -5,7 +5,7 @@ This module contains the ``TypeMatcher``class.
 """
 import inspect
 from jacked._injectable import Injectable
-from jacked._state_holder import StateHolder
+from jacked._container import Container
 from jacked.matchers._base_matcher import BaseMatcher
 
 
@@ -15,7 +15,7 @@ class TypeMatcher(BaseMatcher):
             self,
             hint: object,
             injectable: Injectable,
-            state_holder: StateHolder):
+            container: Container):
         cls = hint.__args__[0]  # TODO assumption!
         if (inspect.isclass(injectable.subject)
                 and issubclass(injectable.subject, cls)):

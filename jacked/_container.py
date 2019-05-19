@@ -7,7 +7,7 @@ instance.
 import jacked
 
 
-class StateHolder:
+class Container:
     def __init__(self):
         self._injectables = []
         self._subjects = set()
@@ -22,4 +22,4 @@ class StateHolder:
         return self._injectables
 
 
-DEFAULT = StateHolder()
+DEFAULT = Container()

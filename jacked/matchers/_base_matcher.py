@@ -6,7 +6,7 @@ This module contains the ``BaseMatcher``class.
 from typing import Any, Optional
 from jacked._compatibility_impl import get_naked_class
 from jacked._injectable import Injectable
-from jacked._state_holder import StateHolder
+from jacked._container import Container
 
 
 class BaseMatcher:
@@ -34,14 +34,14 @@ class BaseMatcher:
             self,
             hint: object,
             injectable: Injectable,
-            state_holder: StateHolder) -> Optional[object]:
+            container: Container) -> Optional[object]:
         """
         See if there is a match between ``hint`` and the ``injectable``. If
         there is a match, return an object that corresponds to ``hint``.
         Otherwise, return ``None``.
         :param hint: the type hint that is to be matched.
         :param injectable: the ``Injectable`` that may be a match for ``hint``.
-        :param state_holder: the instance that contains all injectables.
+        :param container: the instance that contains all injectables.
         :return: an object that corresponds to ``hint`` or ``None``.
         """
         raise NotImplementedError

@@ -7,7 +7,7 @@ import inspect
 from typing import Callable, Tuple, Any
 from jacked._compatibility_impl import get_args_and_return_type
 from jacked._injectable import Injectable
-from jacked._state_holder import StateHolder
+from jacked._container import Container
 from jacked._types import NoneType
 from jacked.matchers._base_matcher import BaseMatcher
 
@@ -18,7 +18,7 @@ class CallableMatcher(BaseMatcher):
             self,
             hint: object,
             injectable: Injectable,
-            state_holder: StateHolder):
+            container: Container):
         if inspect.isfunction(injectable.subject):
             params_hint, return_hint = get_args_and_return_type(hint)
             return_hint = (inspect.Signature.empty if return_hint is NoneType

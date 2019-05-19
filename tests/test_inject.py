@@ -3,9 +3,13 @@ from pathlib import Path
 from typing import Type, List, Callable, Any
 from unittest import TestCase
 from jacked import inject, injectable
+from jacked._container import Container
 from jacked._discover import discover
 from jacked._exceptions import InvalidUsageError, InjectionError
 from test_resources.color import Color
+
+
+CUSTOM_CONTAINER = Container()
 
 
 class Animal(ABC):
@@ -30,6 +34,12 @@ class Cat(Animal):
 class Bird(Animal):
     def sound(self):
         return 'tweet'
+
+
+@injectable(container=CUSTOM_CONTAINER)
+class Goat(Animal):
+    def sound(self):
+        return 'meh'
 
 
 @injectable()
@@ -66,6 +76,10 @@ class TestInject(TestCase):
     def test_simple_injection_without_parentheses(self, cat: Cat):
         self.assertEqual('meouw', cat.sound())
 
+    @inject(container=CUSTOM_CONTAINER)
+    def test_injection_with_different_container(self, animal: Animal):
+        self.assertEqual('meh', animal.sound())
+
     @inject()
     def test_inject_multiple(self, cat1: Cat, cat2: Cat):
         self.assertEqual('meouw', cat1.sound())
@@ -82,6 +96,7 @@ class TestInject(TestCase):
         self.assertTrue('bark' in sounds)
         self.assertTrue('meouw' in sounds)
         self.assertTrue('tweet' in sounds)
+        self.assertTrue('meh' not in sounds)  # Different container.
 
     @inject()
     def test_inject_list_of_classes(self, animals: List[Type[Animal]]):

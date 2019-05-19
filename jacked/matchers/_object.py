@@ -5,7 +5,7 @@ This module contains the ``ObjectMatcher``class.
 """
 import inspect
 from jacked._injectable import Injectable
-from jacked._state_holder import StateHolder
+from jacked._container import Container
 from jacked.matchers._base_matcher import BaseMatcher
 
 
@@ -15,7 +15,7 @@ class ObjectMatcher(BaseMatcher):
             self,
             hint: object,
             injectable: Injectable,
-            state_holder: StateHolder):
+            container: Container):
         # The hint is a regular type, so we're expecting to inject an instance.
         if (inspect.isclass(injectable.subject)
                 and issubclass(injectable.subject, hint)):
