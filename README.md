@@ -1,4 +1,3 @@
 # jacked ~ *Python on roids*
-A tiny dependency injection framework done right.
 
-
+An light and easy to use dependency injection framework.
