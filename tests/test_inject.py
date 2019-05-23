@@ -31,7 +31,7 @@ class Cat(Animal):
         return 'meouw'
 
 
-@injectable()
+@injectable(priority=42)
 class Bird(Animal):
     def sound(self):
         return 'tweet'
@@ -86,6 +86,10 @@ class TestInject(TestCase):
     @inject()
     def test_simple_injection(self, cat: Cat):
         self.assertEqual('meouw', cat.sound())
+
+    @inject()
+    def test_inject_prio(self, animal_type: Type[Animal]):
+        self.assertEqual(Bird, animal_type)
 
     @inject()
     def test_injection_name(self, mouse: Mouse):

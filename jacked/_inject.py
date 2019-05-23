@@ -8,8 +8,9 @@ import inspect
 from collections import ChainMap
 from functools import partial, lru_cache
 from pathlib import Path
-from typing import List, Dict, Any, Type
+from typing import List, Dict, Any, Type, Tuple
 from jacked import _container
+from jacked._container import DEFAULT
 from jacked._discover import discover
 from jacked._exceptions import InjectionError, InvalidUsageError
 from jacked._injectable import Injectable
@@ -64,6 +65,19 @@ def inject(
         return lambda *args, **kwargs: _wrapper(decorated, container, *args,
                                                 **kwargs)
     return partial(_decorator, container=container)
+
+
+def get_candidates(
+        hint: T,
+        *,
+        container: _container.Container = DEFAULT) -> List[T]:
+    """
+    Return all candidates for the given type ``T`` and return them in a list.
+    :param hint: the type for which candidates are to be returned.
+    :param container: the container from which the injectables are fetched.
+    :return: a list of candidates of type ``T``.
+    """
+    return [c for c, _ in _get_candidates(hint, container)]
 
 
 def _decorator(
@@ -142,18 +156,19 @@ def _collect_arguments(
 
 def _get_candidates(
         hint: T,
-        container: _container.Container) -> List[T]:
+        container: _container.Container) -> List[Tuple[T, Injectable]]:
     # Search in the known injectables in `container` for all matching
     # candidates.
     # hint = param.annotation
-    candidates = (_match(hint, injectable, container)
+    candidates = ((_match(hint, injectable, container), injectable)
                   for injectable in container.injectables)
-    return [candidate for candidate in candidates if candidate]
+    return [(c, i) for c, i in candidates if c]
 
 
-def _choose_candidate(candidates: List[object]) -> object:
+def _choose_candidate(candidates: List[Tuple[T, Injectable]]) -> T:
     # From a list of candidates, pick and return one:
-    return candidates[0]
+    candidates.sort(key=lambda c: c[1].priority, reverse=True)
+    return candidates[0][0]
 
 
 def _match(

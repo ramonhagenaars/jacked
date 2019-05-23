@@ -13,14 +13,22 @@ class Injectable:
     """
     Objects of this class hold stuff that can be injected.
     """
-    def __init__(self, subject: object, meta: Dict[str, Any]):
+    def __init__(
+            self,
+            *,
+            subject: object,
+            priority: int,
+            meta: Dict[str, Any]):
         """
         Constructor.
         :param subject: the thing that is to be injected.
+        :param priority: a number that indicates how jacked should choose
+        between candidates.
         :param meta: any meta information.
         """
         self._subject = subject
         self._meta = meta
+        self._priority = priority
 
     @property
     def name(self) -> str:
@@ -38,11 +46,16 @@ class Injectable:
         result.__meta__ = self.meta  # Use the property, not the field.
         return result
 
+    @property
+    def priority(self) -> int:
+        return self._priority
+
 
 def injectable(
         decorated: object = None,
         *,
         name: str = None,
+        priority: int = 0,
         meta: Dict[str, Any] = None,
         container: _container.Container = _container.DEFAULT
 ):
@@ -59,17 +72,20 @@ def injectable(
     :param decorated: the thing (class, function, method) that is to become
     injectable.
     :param name: the name of that thing, stored in the meta information.
+    :param priority: a number that indicates how jacked should choose between
+    candidates; higher priorities are more likely to get injected.
     :param meta: any meta information that is added to the injectable.
     :param container: the registry that stores the new injectable.
     :return:
     """
     if decorated:
-        return _decorator(name, meta, container, decorated)
-    return partial(_decorator, name, meta, container)
+        return _decorator(name, priority, meta, container, decorated)
+    return partial(_decorator, name, priority, meta, container)
 
 
 def _decorator(
         name: str,
+        priority: int,
         meta: Dict[str, Any],
         container: _container.Container,
         decorated: object) -> callable:
@@ -78,6 +94,8 @@ def _decorator(
         **(meta or {}),
         'name': name or decorated.__name__
     }
-    injectable_inst = Injectable(decorated, meta)
+    injectable_inst = Injectable(subject=decorated,
+                                 priority=priority,
+                                 meta=meta)
     container.register(injectable_inst)
     return decorated
