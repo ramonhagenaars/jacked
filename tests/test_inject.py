@@ -19,7 +19,7 @@ class Animal(ABC):
         raise NotImplementedError
 
 
-@injectable()
+@injectable(singleton=True)
 class Dog(Animal):
     def sound(self):
         return 'bark'
@@ -86,6 +86,11 @@ class TestInject(TestCase):
     @inject()
     def test_simple_injection(self, cat: Cat):
         self.assertEqual('meouw', cat.sound())
+
+    @inject()
+    def test_singleton(self, dog1: Dog, dog2: Dog, cat1: Cat, cat2: Cat):
+        self.assertEqual(dog1, dog2)
+        self.assertNotEqual(cat1, cat2)
 
     @inject()
     def test_inject_prio(self, animal_type: Type[Animal]):

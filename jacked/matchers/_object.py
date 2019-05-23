@@ -19,7 +19,13 @@ class ObjectMatcher(BaseMatcher):
         # The hint is a regular type, so we're expecting to inject an instance.
         if (inspect.isclass(injectable.subject)
                 and issubclass(injectable.subject, hint)):
-            return injectable.subject()
+            if injectable.singleton:
+                if not container.get_instance(hint):
+                    container.set_instance(hint, injectable.subject())
+                result = container.get_instance(hint)
+            else:
+                result = injectable.subject()
+            return result
 
     def _matching_type(self):
         return object
