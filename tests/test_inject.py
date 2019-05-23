@@ -6,6 +6,7 @@ from jacked import inject, injectable
 from jacked._container import Container
 from jacked._discover import discover
 from jacked._exceptions import InvalidUsageError, InjectionError
+from jacked._inject import inject_here
 from test_resources.color import Color
 
 
@@ -98,6 +99,10 @@ class TestInject(TestCase):
     @inject(container=CUSTOM_CONTAINER)
     def test_injection_with_different_container(self, animal: Animal):
         self.assertEqual('meh', animal.sound())
+
+    def test_inject_here(self):
+        cat = inject_here(Cat)
+        self.assertEqual('meouw', cat.sound())
 
     def test_injection_with_multiple_containers(self):
 
@@ -240,7 +245,7 @@ class TestInject(TestCase):
         try:
             _func()
         except InjectionError as err:
-            self.assertEqual('obj', err.parameter.name)
+            self.assertEqual('obj', err.subject.name)
 
     def test_inject_with_discovery(self):
 

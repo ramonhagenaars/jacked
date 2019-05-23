@@ -6,6 +6,7 @@ This module contains types that are not available by default.
 import typing
 
 
+T = typing.TypeVar('T')
 Module = type(typing)
 NoneType = type(None)
 

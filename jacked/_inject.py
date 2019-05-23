@@ -8,12 +8,35 @@ import inspect
 from collections import ChainMap
 from functools import partial, lru_cache
 from pathlib import Path
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Type
 from jacked import _container
 from jacked._discover import discover
 from jacked._exceptions import InjectionError, InvalidUsageError
 from jacked._injectable import Injectable
+from jacked._types import T
 from jacked.matchers._base_matcher import BaseMatcher
+
+
+def inject_here(
+        hint: Type[T],
+        *,
+        container: _container.Container = _container.DEFAULT
+) -> T:
+    """
+    Usage example:
+
+        some_inst = inject_here(SomeClass)
+
+    :param hint: the type that hints what is to be returned.
+    :param container: the Container from which the injectable is to be
+    returned.
+    :return: an injectable that corresponds to ``hint``.
+    """
+    candidates = _get_candidates(hint, container)
+    if not candidates:
+        raise InjectionError('No suitable candidates for "{}".'
+                             .format(hint), hint)
+    return _choose_candidate(candidates)
 
 
 def inject(
@@ -103,8 +126,9 @@ def _collect_arguments(
         if param_name in ('self', 'cls'):
             continue
         param = signature.parameters[param_name]
+        hint = param.annotation
         # Get all candidates that could be injected according to `signature`:
-        candidates = _get_candidates(param, container)
+        candidates = _get_candidates(hint, container)
         if not candidates:
             result[param_name] = param.default
             if param.default is inspect.Parameter.empty:
@@ -117,11 +141,12 @@ def _collect_arguments(
 
 
 def _get_candidates(
-        parameter: inspect.Parameter,
-        container: _container.Container) -> List[object]:
+        hint: T,
+        container: _container.Container) -> List[T]:
     # Search in the known injectables in `container` for all matching
     # candidates.
-    candidates = (_match(parameter, injectable, container)
+    # hint = param.annotation
+    candidates = (_match(hint, injectable, container)
                   for injectable in container.injectables)
     return [candidate for candidate in candidates if candidate]
 
@@ -132,14 +157,12 @@ def _choose_candidate(candidates: List[object]) -> object:
 
 
 def _match(
-        parameter: inspect.Parameter,
+        hint: type,
         injectable: Injectable,
         container: _container.Container) -> object:
     # Check if the given `parameter` matches with the given `injectable`. If
     # there appears to be a match, return what is to be injected (e.g. an
     # instance of a class, a class itself, ...). If no match, return `None`.
-    hint = parameter.annotation
-
     for matcher in _get_matchers():
         if matcher.can_match(hint):
             # Match or no match, return anyway:

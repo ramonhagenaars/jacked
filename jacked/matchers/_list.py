@@ -18,9 +18,8 @@ class ListMatcher(BaseMatcher):
             injectable: Injectable,
             container: Container):
         sub_hint = getattr(hint, '__args__', [None])[0]
-        parameter = inspect.Parameter(name='_', kind=1,
-                                      annotation=sub_hint)
-        return _get_candidates(parameter, container)
+        param = inspect.Parameter(name='_', kind=1, annotation=sub_hint)
+        return _get_candidates(param.annotation, container)
 
     def _matching_type(self):
         return list

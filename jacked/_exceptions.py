@@ -4,6 +4,7 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains the ``jacked`` error classes.
 """
 import inspect
+from typing import Union
 
 
 class JackedError(Exception):
@@ -23,6 +24,12 @@ class InjectionError(JackedError):
     """
     Raised when injection failed.
     """
-    def __init__(self, msg: str, parameter: inspect.Parameter):
+    def __init__(self, msg: str, subject: Union[inspect.Parameter, type]):
+        """
+        Constructor.
+        :param msg: the message of the error.
+        :param subject: a parameter in case of a decorator injection, a type in
+        case of ``inject_here`` was used.
+        """
         super(InjectionError, self).__init__(msg)
-        self.parameter = parameter
+        self.subject = subject
