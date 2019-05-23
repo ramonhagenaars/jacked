@@ -12,7 +12,7 @@ setup(
     author_email='ramon.hagenaars@gmail.com',
     description='Dependency injection for Python',
     long_description=long_description,
-    long_description_content_type='text/x-rst',
+    long_description_content_type='text/markdown',
     url='https://github.com/ramonhagenaars/jacked',
     packages=[
         'jacked',
