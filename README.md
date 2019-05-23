@@ -98,6 +98,17 @@ You could have also injected a ``list`` of classes or functions by hinting
 ``List[Type[...]]`` or ``List[Callable[...]]`` (the ``...`` replaced by your
 injection target).
 
+### Singletons
+You can annotate an injectable as singleton, meaning that if the injectable is 
+a class, only one instance is ever injected:
+
+```python
+@injectable(singleton=True)
+class Dog(Animal):
+    def sound(self):
+        return 'bark'
+```
+
 ### Auto discovery
 You can let **jacked** discover injectables in some package using the 
 ``discover`` function:
