@@ -97,6 +97,10 @@ class TestInject(TestCase):
         self.assertEqual(Bird, animal_type)
 
     @inject()
+    def test_inject_prio_list(self, animal_types: List[Type[Animal]]):
+        self.assertEqual(Bird, animal_types[0])
+
+    @inject()
     def test_injection_name(self, mouse: Mouse):
         self.assertEqual('Elephant', mouse.__meta__.name)
         self.assertEqual('enormous', mouse.__meta__.size)

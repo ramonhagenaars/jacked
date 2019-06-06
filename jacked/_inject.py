@@ -158,17 +158,17 @@ def _get_candidates(
         hint: T,
         container: _container.Container) -> List[Tuple[T, Injectable]]:
     # Search in the known injectables in `container` for all matching
-    # candidates.
-    # hint = param.annotation
+    # candidates. The candidates are returned sorted by their priority.
     candidates = ((_match(hint, injectable, container), injectable)
                   for injectable in container.injectables)
-    return [(c, i) for c, i in candidates if c]
+    result = [(c, i) for c, i in candidates if c]
+    result.sort(key=lambda c: c[1].priority, reverse=True)
+    return result
 
 
 def _choose_candidate(candidates: List[Tuple[T, Injectable]]) -> T:
     # From a list of candidates, pick and return one:
-    candidates.sort(key=lambda c: c[1].priority, reverse=True)
-    return candidates[0][0]
+    return candidates[0][0]  # The first should have the highest priority.
 
 
 def _match(
