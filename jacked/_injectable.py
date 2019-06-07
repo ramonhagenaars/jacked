@@ -66,7 +66,7 @@ def injectable(
         priority: int = 0,
         meta: Dict[str, Any] = None,
         singleton: bool = False,
-        container: _container.Container = _container.DEFAULT
+        container: _container.Container = _container.DEFAULT_CONTAINER
 ):
     """
     A decorator that marks something as injectable.

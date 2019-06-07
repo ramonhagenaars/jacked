@@ -58,4 +58,4 @@ class Container:
         self._instances[hint] = instance
 
 
-DEFAULT = Container()
+DEFAULT_CONTAINER = Container()

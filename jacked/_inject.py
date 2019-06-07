@@ -10,7 +10,7 @@ from functools import partial, lru_cache
 from pathlib import Path
 from typing import List, Dict, Any, Type, Tuple
 from jacked import _container
-from jacked._container import DEFAULT
+from jacked._container import DEFAULT_CONTAINER
 from jacked._discover import discover
 from jacked._exceptions import InjectionError, InvalidUsageError
 from jacked._injectable import Injectable
@@ -21,7 +21,7 @@ from jacked.matchers._base_matcher import BaseMatcher
 def inject_here(
         hint: Type[T],
         *,
-        container: _container.Container = _container.DEFAULT
+        container: _container.Container = _container.DEFAULT_CONTAINER
 ) -> T:
     """
     Usage example:
@@ -43,7 +43,7 @@ def inject_here(
 def inject(
         decorated: callable = None,
         *,
-        container: _container.Container = _container.DEFAULT
+        container: _container.Container = _container.DEFAULT_CONTAINER
 ) -> callable:
     """
     Decorator that will inject all parameters that were not already explicitly
@@ -70,7 +70,7 @@ def inject(
 def get_candidates(
         hint: T,
         *,
-        container: _container.Container = DEFAULT) -> List[T]:
+        container: _container.Container = DEFAULT_CONTAINER) -> List[T]:
     """
     Return all candidates for the given type ``T`` and return them in a list.
     :param hint: the type for which candidates are to be returned.

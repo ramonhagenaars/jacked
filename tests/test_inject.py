@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Type, List, Callable, Any
 from unittest import TestCase
-from jacked import inject, injectable
-from jacked._container import Container
+from jacked import inject, injectable, Injectable
+from jacked._container import Container, DEFAULT_CONTAINER
 from jacked._discover import discover
 from jacked._exceptions import InvalidUsageError, InjectionError
 from jacked._inject import inject_here
@@ -116,6 +116,26 @@ class TestInject(TestCase):
     def test_inject_here(self):
         cat = inject_here(Cat)
         self.assertEqual('meouw', cat.sound())
+
+    def test_register_on_the_fly(self):
+
+        class SomeBaseClass:
+            pass
+
+        class SomeDerivedClass(SomeBaseClass):
+            pass
+
+        injectable_ = Injectable(
+            subject=SomeDerivedClass,
+            priority=0,
+            singleton=False,
+            meta={'name': SomeDerivedClass.__name__}
+        )
+
+        DEFAULT_CONTAINER.register(injectable_)
+        injected = inject_here(SomeBaseClass)
+
+        self.assertTrue(isinstance(injected, SomeBaseClass))
 
     def test_injection_with_multiple_containers(self):
 
