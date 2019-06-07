@@ -87,7 +87,7 @@ def injectable(
     :param singleton: if True and ``decorated`` is a class, then a singleton
     instance will be injected for every injection on from ``container``.
     :param container: the registry that stores the new injectable.
-    :return:
+    :return: a decorator.
     """
     if decorated:
         return _decorator(name, priority, meta, singleton,
