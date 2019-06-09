@@ -137,6 +137,16 @@ class TestInject(TestCase):
 
         self.assertTrue(isinstance(injected, SomeBaseClass))
 
+    def test_set_instance(self):
+
+        @injectable(singleton=True)
+        class C:
+            pass
+
+        inst = C()
+        DEFAULT_CONTAINER.set_instance(C, inst)
+        self.assertEqual(inst, inject_here(C))
+
     def test_injection_with_multiple_containers(self):
 
         @inject(container=CUSTOM_CONTAINER)
