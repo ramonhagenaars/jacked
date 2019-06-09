@@ -70,7 +70,7 @@ def get_args_and_return_type(
     if hint in (callable, Callable):
         arg_types = None
         return_type = None
-    elif sys.version_info[1] is 5:
+    elif hasattr(hint, '__result__'):
         arg_types = hint.__args__
         return_type = hint.__result__
     else:
