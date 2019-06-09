@@ -1,3 +1,9 @@
+[![Build Status](https://travis-ci.org/ramonhagenaars/jacked.svg?branch=master)](https://travis-ci.org/ramonhagenaars/jacked)
+[![Pypi version](https://badge.fury.io/py/jacked.svg)](https://badge.fury.io/py/jsons)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/ramonhagenaars/jacked/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/ramonhagenaars/jacked/?branch=master)
+[![codecov](https://codecov.io/gh/ramonhagenaars/jacked/branch/master/graph/badge.svg)](https://codecov.io/gh/ramonhagenaars/jacked)
+
+
 _NOTE: This project is in ALPHA state_
 # jacked ~ *python on roids*
 
