@@ -14,7 +14,7 @@ from jacked._container import DEFAULT_CONTAINER
 from jacked._discover import discover
 from jacked._exceptions import InjectionError, InvalidUsageError
 from jacked._injectable import Injectable
-from jacked._types import T
+from jacked._typing import T
 from jacked.matchers._base_matcher import BaseMatcher
 
 

@@ -1,7 +1,7 @@
 from typing import Callable
 from unittest import TestCase
 from jacked._compatibility_impl import get_args_and_return_type
-from jacked._types import NoneType
+from jacked._typing import NoneType
 
 
 class TestCompatibilityImpl(TestCase):

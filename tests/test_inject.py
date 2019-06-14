@@ -1,7 +1,7 @@
 import asyncio
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Type, List, Callable, Any
+from typing import Type, List, Callable, Any, Awaitable
 from unittest import TestCase
 from jacked import inject, injectable, Injectable
 from jacked._container import Container, DEFAULT_CONTAINER
@@ -78,9 +78,19 @@ def func_list_empty(x: list):
     return x + [1, 2, 3]
 
 
+@injectable
+def func_list_of_str_empty(x: List[str]):
+    return x + ['42']
+
+
 @injectable()
 def func_cat_str(cat: Cat) -> str:
     return cat.sound()
+
+
+@injectable()
+async def async_func_str_str(x: int) -> str:
+    return '42'
 
 
 class TestInject(TestCase):
@@ -259,12 +269,18 @@ class TestInject(TestCase):
             self.assertEqual(func_str_str, callables[0])
 
         @inject()
-        def _func6(callable: Callable[[list], None]):
-            self.assertEqual(func_list_empty, callable)
+        def _func6(callable: Callable[[Animal], str]):
+            self.assertEqual(func_cat_str, callable)
 
         @inject()
-        def _func7(callable: Callable[[Animal], str]):
-            self.assertEqual(func_cat_str, callable)
+        def _func7(callables: List[Callable[[list], None]]):
+            self.assertTrue(func_list_empty in callables)
+            self.assertTrue(func_list_of_str_empty in callables)
+
+        @inject()
+        def _func8(callables: List[Callable[[List[str]], None]]):
+            self.assertTrue(func_list_empty not in callables)
+            self.assertTrue(func_list_of_str_empty in callables)
 
         _func1()
         _func2()
@@ -273,6 +289,7 @@ class TestInject(TestCase):
         _func5()
         _func6()
         _func7()
+        _func8()
 
     def test_inject_method(self):
 
@@ -297,8 +314,11 @@ class TestInject(TestCase):
 
         asyncio.get_event_loop().run_until_complete(func())
 
-    def test_inject_async_function(self):
-        pass  # TODO!
+    @inject()
+    def test_inject_async_function(self, f1: Callable[[int], Awaitable[str]]):
+        self.assertEqual(async_func_str_str, f1)
+
+        # TODO test also with typing.Coroutine
 
     def test_inject_fail(self):
 

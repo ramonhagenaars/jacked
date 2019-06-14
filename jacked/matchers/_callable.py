@@ -4,11 +4,11 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains the ``CallableMatcher``class.
 """
 import inspect
-from typing import Callable, Tuple, Any
+from typing import Callable, Tuple, Any, Awaitable
 from jacked._compatibility_impl import get_args_and_return_type
 from jacked._injectable import Injectable
 from jacked._container import Container
-from jacked._types import NoneType
+from jacked._typing import NoneType, issubtype
 from jacked.matchers._base_matcher import BaseMatcher
 
 
@@ -27,6 +27,8 @@ class CallableMatcher(BaseMatcher):
             params_injectable = tuple([signature.parameters[x].annotation
                                        for x in signature.parameters])
             return_injectable = signature.return_annotation
+            if inspect.iscoroutinefunction(injectable.subject):
+                return_injectable = Awaitable[return_injectable]
             if (self._params_match(params_hint, params_injectable)
                     and self._compatible_with(return_injectable, return_hint)):
                 return injectable.subject
@@ -44,4 +46,4 @@ class CallableMatcher(BaseMatcher):
         return True
 
     def _compatible_with(self, t1: type, t2: type):
-        return t2 is Any or issubclass(t1, t2)
+        return t2 is Any or issubtype(t1, t2)

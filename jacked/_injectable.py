@@ -6,7 +6,7 @@ This module contains the ``Injectable`` class and the ``injectable`` decorator.
 from functools import partial
 from typing import Dict, Any
 from jacked import _container
-from jacked._types import AttrDict
+from jacked._typing import AttrDict
 
 
 class Injectable:
