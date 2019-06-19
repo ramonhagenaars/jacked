@@ -34,20 +34,29 @@ def issubtype(cls: type, clsinfo: type) -> bool:
     :param clsinfo: the object.
     :return: True if ``cls`` is a subclass of ``clsinfo`` considering generics.
     """
-    result = False
     info_generic_type, info_args = _split_generic(clsinfo)
-    if info_args:
-        cls_generic_type, cls_args = _split_generic(cls)
-        if (cls_generic_type == info_generic_type and cls_args
-                and len(cls_args) == len(info_args)):
-            args_do_correspond = True
-            for tup in zip(cls_args, info_args):
-                args_do_correspond &= issubtype(*tup)
-            result = args_do_correspond
-        # Note that issubtype(list, List[...]) is always False.
-        # Note that the number of arguments must be equal.
+    if clsinfo in (typing.Any, object):
+        result = True
+    elif info_args:
+        result = _issubtype_generic(cls, info_generic_type, info_args)
     else:
         result = issubclass(cls, clsinfo)
+    return result
+
+
+def _issubtype_generic(cls: type, info_generic_type: type, info_args: tuple) -> bool:
+    # Check if cls is a subtype of info_generic_type, knowing that the latter
+    # is a generic type.
+    result = False
+    cls_generic_type, cls_args = _split_generic(cls)
+    if (cls_generic_type == info_generic_type and cls_args
+            and len(cls_args) == len(info_args)):
+        args_do_correspond = True
+        for tup in zip(cls_args, info_args):
+            args_do_correspond &= issubtype(*tup)
+        result = args_do_correspond
+    # Note that issubtype(list, List[...]) is always False.
+    # Note that the number of arguments must be equal.
     return result
 
 
