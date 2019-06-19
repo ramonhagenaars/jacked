@@ -3,6 +3,7 @@ PRIVATE MODULE: do not import (from) it directly.
 
 This module contains types that are not available by default.
 """
+import sys
 import typing
 
 
@@ -40,11 +41,14 @@ def issubtype(cls: type, clsinfo: type) -> bool:
     elif info_args:
         result = _issubtype_generic(cls, info_generic_type, info_args)
     else:
-        result = issubclass(cls, clsinfo)
+        result = issubclass(_without_generic(cls), _without_generic(clsinfo))
     return result
 
 
-def _issubtype_generic(cls: type, info_generic_type: type, info_args: tuple) -> bool:
+def _issubtype_generic(
+        cls: type,
+        info_generic_type: type,
+        info_args: tuple) -> bool:
     # Check if cls is a subtype of info_generic_type, knowing that the latter
     # is a generic type.
     result = False
@@ -60,6 +64,19 @@ def _issubtype_generic(cls: type, info_generic_type: type, info_args: tuple) -> 
     return result
 
 
-def _split_generic(t: type) -> typing.Tuple[type, typing.Optional[typing.Tuple[type, ...]]]:
-    # split the given generic type into the type and its args.
-    return getattr(t, '__origin__', t), getattr(t, '__args__', None)
+def _split_generic(t: type) -> \
+        typing.Tuple[type, typing.Optional[typing.Tuple[type, ...]]]:
+    # Split the given generic type into the type and its args.
+    origin = getattr(t, '__origin__', t)
+    args_ = getattr(t, '__args__', tuple()) or tuple()
+    args = tuple([attr for attr in args_
+                  if type(attr) != typing.TypeVar])
+    return origin, args
+
+
+def _without_generic(t: type) -> type:
+    # Return type t without any generic type.
+    attr = '__origin__'
+    if sys.version_info[1] in (5, 6):
+        attr = '__extra__'
+    return getattr(t, attr, t)
