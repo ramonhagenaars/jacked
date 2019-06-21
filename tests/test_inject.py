@@ -1,6 +1,7 @@
+import asyncio
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Type, List, Callable, Any
+from typing import Type, List, Callable, Any, Awaitable
 from unittest import TestCase
 from jacked import inject, injectable, Injectable
 from jacked._container import Container, DEFAULT_CONTAINER
@@ -21,6 +22,7 @@ class Animal(ABC):
 
 @injectable(singleton=True)
 class Dog(Animal):
+    """Docstring for Dog"""
     def sound(self):
         return 'bark'
 
@@ -28,7 +30,7 @@ class Dog(Animal):
 @injectable  # No parentheses.
 class Cat(Animal):
     def sound(self):
-        return 'meouw'
+        return 'meow'
 
 
 @injectable(priority=42)
@@ -49,7 +51,7 @@ class Goat(Animal):
         return 'meh'
 
 
-# The same object injected in two different contains under different names.
+# The same object injected in two different containers under different names.
 @injectable()
 @injectable(container=CUSTOM_CONTAINER, name='Kip')
 class Chicken(Animal):
@@ -59,7 +61,20 @@ class Chicken(Animal):
 
 @injectable()
 def func_str_str(x: str) -> str:
+    """Docstring for func_str_str"""
     return x.upper()
+
+
+@injectable
+@inject
+def injectable_inject(dog: Dog) -> Dog:
+    return dog
+
+
+@inject
+@injectable
+def inject_injectable(dog: Dog) -> Dog:
+    return dog
 
 
 @injectable()
@@ -77,15 +92,25 @@ def func_list_empty(x: list):
     return x + [1, 2, 3]
 
 
+@injectable
+def func_list_of_str_empty(x: List[str]):
+    return x + ['42']
+
+
 @injectable()
 def func_cat_str(cat: Cat) -> str:
     return cat.sound()
 
 
+@injectable()
+async def async_func_str_str(x: int) -> str:
+    return '42'
+
+
 class TestInject(TestCase):
     @inject()
     def test_simple_injection(self, cat: Cat):
-        self.assertEqual('meouw', cat.sound())
+        self.assertEqual('meow', cat.sound())
 
     @inject()
     def test_singleton(self, dog1: Dog, dog2: Dog, cat1: Cat, cat2: Cat):
@@ -107,7 +132,7 @@ class TestInject(TestCase):
 
     @inject
     def test_simple_injection_without_parentheses(self, cat: Cat):
-        self.assertEqual('meouw', cat.sound())
+        self.assertEqual('meow', cat.sound())
 
     @inject(container=CUSTOM_CONTAINER)
     def test_injection_with_different_container(self, animal: Animal):
@@ -115,7 +140,7 @@ class TestInject(TestCase):
 
     def test_inject_here(self):
         cat = inject_here(Cat)
-        self.assertEqual('meouw', cat.sound())
+        self.assertEqual('meow', cat.sound())
 
     def test_register_on_the_fly(self):
 
@@ -144,7 +169,7 @@ class TestInject(TestCase):
             pass
 
         inst = C()
-        DEFAULT_CONTAINER.set_instance(C, inst)
+        DEFAULT_CONTAINER.set_instance(C, inst, 999)
         self.assertEqual(inst, inject_here(C))
 
     def test_injection_with_multiple_containers(self):
@@ -162,8 +187,8 @@ class TestInject(TestCase):
 
     @inject()
     def test_inject_multiple(self, cat1: Cat, cat2: Cat):
-        self.assertEqual('meouw', cat1.sound())
-        self.assertEqual('meouw', cat2.sound())
+        self.assertEqual('meow', cat1.sound())
+        self.assertEqual('meow', cat2.sound())
         self.assertNotEqual(cat1, cat2)
 
     @inject()
@@ -174,7 +199,7 @@ class TestInject(TestCase):
     def test_inject_list(self, animals: List[Animal]):
         sounds = set([animal.sound() for animal in animals])
         self.assertTrue('bark' in sounds)
-        self.assertTrue('meouw' in sounds)
+        self.assertTrue('meow' in sounds)
         self.assertTrue('tweet' in sounds)
         self.assertTrue('peep' in sounds)
         self.assertTrue('meh' not in sounds)  # Different container.
@@ -183,7 +208,7 @@ class TestInject(TestCase):
     def test_inject_list_of_classes(self, animals: List[Type[Animal]]):
         sounds = set([animal().sound() for animal in animals])
         self.assertTrue('bark' in sounds)
-        self.assertTrue('meouw' in sounds)
+        self.assertTrue('meow' in sounds)
         self.assertTrue('tweet' in sounds)
 
     def test_inject_with_default(self):
@@ -193,13 +218,13 @@ class TestInject(TestCase):
 
         @inject()
         def _func(cat: Cat, obj: NotInjectable = 42):
-            self.assertEqual('meouw', cat.sound())
+            self.assertEqual('meow', cat.sound())
             self.assertEqual(42, obj)
 
         @inject()
         def _func2(animal: Cat = Dog()):
             # Dog is a default value but should be overridden by the injection.
-            self.assertEqual('meouw', animal.sound())
+            self.assertEqual('meow', animal.sound())
 
         _func()
         _func2()
@@ -258,12 +283,18 @@ class TestInject(TestCase):
             self.assertEqual(func_str_str, callables[0])
 
         @inject()
-        def _func6(callable: Callable[[list], None]):
-            self.assertEqual(func_list_empty, callable)
+        def _func6(callable: Callable[[Animal], str]):
+            self.assertEqual(func_cat_str, callable)
 
         @inject()
-        def _func7(callable: Callable[[Animal], str]):
-            self.assertEqual(func_cat_str, callable)
+        def _func7(callables: List[Callable[[list], None]]):
+            self.assertTrue(func_list_empty in callables)
+            self.assertTrue(func_list_of_str_empty in callables)
+
+        @inject()
+        def _func8(callables: List[Callable[[List[str]], None]]):
+            self.assertTrue(func_list_empty not in callables)
+            self.assertTrue(func_list_of_str_empty in callables)
 
         _func1()
         _func2()
@@ -272,6 +303,36 @@ class TestInject(TestCase):
         _func5()
         _func6()
         _func7()
+        _func8()
+
+    def test_inject_method(self):
+
+        local_container = Container()
+
+        class SomeLocalClass:
+            @injectable(container=local_container)
+            def m(self, x: int) -> str:
+                return '42'
+
+        @inject(container=local_container)
+        def func(method: Callable[[Any, int], str]):
+            self.assertEqual(SomeLocalClass.m, method)
+
+        func()
+
+    def test_inject_into_async_function(self):
+
+        @inject()
+        async def func(animal: Cat):
+            self.assertEqual('meow', animal.sound())
+
+        asyncio.get_event_loop().run_until_complete(func())
+
+    @inject()
+    def test_inject_async_function(self, f1: Callable[[int], Awaitable[str]]):
+        self.assertEqual(async_func_str_str, f1)
+
+        # TODO test also with typing.Coroutine
 
     def test_inject_fail(self):
 
@@ -309,3 +370,23 @@ class TestInject(TestCase):
         self.assertTrue('blue' in module_names)
 
         get_all_colors()
+
+    def test_signature_preservation(self):
+
+        @inject
+        def func1(dog: Dog):
+            """Docstring for func1"""
+            self.assertEqual('Docstring for Dog', dog.__class__.__doc__)
+
+        @inject
+        def func2(c: Callable[[str], str]):
+            self.assertEqual('Docstring for func_str_str', c.__doc__)
+
+        func1()
+        func2()
+
+        self.assertEqual('Docstring for func1', func1.__doc__)
+
+    @inject
+    def test_inject_injectable(self, l: List[Callable[[Dog], Dog]]):
+        self.assertEqual(2, len(l))

@@ -8,7 +8,7 @@ import sys
 from importlib import import_module
 from pathlib import Path
 from typing import List
-from jacked._types import Module
+from jacked._typing import Module
 
 
 def discover(directory: str = '.') -> List[Module]:

@@ -4,6 +4,7 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains the ``inject`` function and its required private
 functions.
 """
+import functools
 import inspect
 from collections import ChainMap
 from functools import partial, lru_cache
@@ -14,7 +15,7 @@ from jacked._container import DEFAULT_CONTAINER
 from jacked._discover import discover
 from jacked._exceptions import InjectionError, InvalidUsageError
 from jacked._injectable import Injectable
-from jacked._types import T
+from jacked._typing import T
 from jacked.matchers._base_matcher import BaseMatcher
 
 
@@ -62,8 +63,9 @@ def inject(
     """
     if decorated:
         _check_decorated(decorated)
-        return lambda *args, **kwargs: _wrapper(decorated, container, *args,
-                                                **kwargs)
+        return functools.update_wrapper(
+            lambda *args, **kwargs: _wrapper(decorated, container,
+                                             *args, **kwargs), decorated)
     return partial(_decorator, container=container)
 
 
@@ -86,8 +88,9 @@ def _decorator(
     # This function acts as the "actual decorator" if any arguments were passed
     # to `inject`.
     _check_decorated(decorated)
-    return lambda *args, **kwargs: _wrapper(decorated, container, *args,
-                                            **kwargs)
+    return functools.update_wrapper(
+        lambda *args, **kwargs: _wrapper(decorated, container, *args,
+                                         **kwargs), decorated)
 
 
 def _check_decorated(decorated: callable):

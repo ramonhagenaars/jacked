@@ -7,7 +7,7 @@ with open('README.md', 'r') as fh:
 
 setup(
     name='jacked',
-    version='1.0.0a2',
+    version='1.0.0a3',
     author='Ramon Hagenaars',
     author_email='ramon.hagenaars@gmail.com',
     description='Dependency injection for Python',
@@ -29,6 +29,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7'
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8'
     ]
 )

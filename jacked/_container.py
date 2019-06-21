@@ -46,16 +46,28 @@ class Container:
         :param hint: a type hint that describes the object.
         :return: an instance for that hint or None.
         """
-        return self._instances.get(hint, None)
 
-    def set_instance(self, hint: object, instance: object):
+        inst, _ = self._instances.get(hint, (None, None))
+        return inst
+
+    def set_instance(
+            self,
+            hint: object,
+            instance: 'jacked.Injectable',
+            priority: int = 0):
         """
-        Set an instance for a type hint.
+        Set an instance for a type hint. If there already is an instance and
+        the given priority is lesser than or equal to the priority of the
+        existing instance, then the given instance will NOT override the
+        existing.
         :param hint: a type hint that describes the object.
         :param instance: an instance for that hint.
+        :param priority: the priority of the instance.
         :return: None.
         """
-        self._instances[hint] = instance
+        _, prio_existing = self._instances.get(hint, (None, -1))
+        if priority > prio_existing:
+            self._instances[hint] = (instance, priority)
 
 
 DEFAULT_CONTAINER = Container()

@@ -20,8 +20,8 @@ class ObjectMatcher(BaseMatcher):
         if (inspect.isclass(injectable.subject)
                 and issubclass(injectable.subject, hint)):
             if injectable.singleton:
-                if not container.get_instance(hint):
-                    container.set_instance(hint, injectable.subject())
+                container.set_instance(hint, injectable.subject(),
+                                       injectable.priority)
                 result = container.get_instance(hint)
             else:
                 result = injectable.subject()
