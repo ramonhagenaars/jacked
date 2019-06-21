@@ -4,6 +4,7 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains the ``inject`` function and its required private
 functions.
 """
+import functools
 import inspect
 from collections import ChainMap
 from functools import partial, lru_cache
@@ -62,8 +63,9 @@ def inject(
     """
     if decorated:
         _check_decorated(decorated)
-        return lambda *args, **kwargs: _wrapper(decorated, container, *args,
-                                                **kwargs)
+        return functools.update_wrapper(
+            lambda *args, **kwargs: _wrapper(decorated, container,
+                                             *args, **kwargs), decorated)
     return partial(_decorator, container=container)
 
 
@@ -86,8 +88,9 @@ def _decorator(
     # This function acts as the "actual decorator" if any arguments were passed
     # to `inject`.
     _check_decorated(decorated)
-    return lambda *args, **kwargs: _wrapper(decorated, container, *args,
-                                            **kwargs)
+    return functools.update_wrapper(
+        lambda *args, **kwargs: _wrapper(decorated, container, *args,
+                                         **kwargs), decorated)
 
 
 def _check_decorated(decorated: callable):

@@ -90,8 +90,9 @@ def injectable(
     :return: a decorator.
     """
     if decorated:
-        return _decorator(name, priority, meta, singleton,
+        result = _decorator(name, priority, meta, singleton,
                           container, decorated)
+        return result
     return partial(_decorator, name, priority, meta, singleton, container)
 
 

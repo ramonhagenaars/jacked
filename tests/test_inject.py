@@ -22,6 +22,7 @@ class Animal(ABC):
 
 @injectable(singleton=True)
 class Dog(Animal):
+    """Docstring for Dog"""
     def sound(self):
         return 'bark'
 
@@ -50,7 +51,7 @@ class Goat(Animal):
         return 'meh'
 
 
-# The same object injected in two different contains under different names.
+# The same object injected in two different containers under different names.
 @injectable()
 @injectable(container=CUSTOM_CONTAINER, name='Kip')
 class Chicken(Animal):
@@ -60,7 +61,20 @@ class Chicken(Animal):
 
 @injectable()
 def func_str_str(x: str) -> str:
+    """Docstring for func_str_str"""
     return x.upper()
+
+
+@injectable
+@inject
+def injectable_inject(dog: Dog) -> Dog:
+    return dog
+
+
+@inject
+@injectable
+def inject_injectable(dog: Dog) -> Dog:
+    return dog
 
 
 @injectable()
@@ -356,3 +370,23 @@ class TestInject(TestCase):
         self.assertTrue('blue' in module_names)
 
         get_all_colors()
+
+    def test_signature_preservation(self):
+
+        @inject
+        def func1(dog: Dog):
+            """Docstring for func1"""
+            self.assertEqual('Docstring for Dog', dog.__class__.__doc__)
+
+        @inject
+        def func2(c: Callable[[str], str]):
+            self.assertEqual('Docstring for func_str_str', c.__doc__)
+
+        func1()
+        func2()
+
+        self.assertEqual('Docstring for func1', func1.__doc__)
+
+    @inject
+    def test_inject_injectable(self, l: List[Callable[[Dog], Dog]]):
+        self.assertEqual(2, len(l))
