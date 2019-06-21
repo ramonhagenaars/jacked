@@ -4,7 +4,7 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains the ``StateHolder`` class and the default ``StateHolder``
 instance.
 """
-from typing import Optional, List, Set, Dict, Tuple
+from typing import Optional
 import jacked
 
 
@@ -17,9 +17,9 @@ class Container:
         """
         Constructor.
         """
-        self._injectables: List['jacked.Injectable'] = list()
-        self._subjects: Set[str] = set()
-        self._instances: Dict[object, Tuple[object, int]] = dict()
+        self._injectables = list()
+        self._subjects = set()
+        self._instances = dict()
 
     def register(self, injectable: 'jacked.Injectable'):
         """
