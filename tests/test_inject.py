@@ -169,7 +169,7 @@ class TestInject(TestCase):
             pass
 
         inst = C()
-        DEFAULT_CONTAINER.set_instance(C, inst)
+        DEFAULT_CONTAINER.set_instance(C, inst, 999)
         self.assertEqual(inst, inject_here(C))
 
     def test_injection_with_multiple_containers(self):

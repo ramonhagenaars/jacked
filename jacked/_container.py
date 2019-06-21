@@ -4,7 +4,7 @@ PRIVATE MODULE: do not import (from) it directly.
 This module contains the ``StateHolder`` class and the default ``StateHolder``
 instance.
 """
-from typing import Optional
+from typing import Optional, List, Set, Dict, Tuple
 import jacked
 
 
@@ -17,9 +17,9 @@ class Container:
         """
         Constructor.
         """
-        self._injectables = list()
-        self._subjects = set()
-        self._instances = dict()
+        self._injectables: List['jacked.Injectable'] = list()
+        self._subjects: Set[str] = set()
+        self._instances: Dict[object, Tuple[object, int]] = dict()
 
     def register(self, injectable: 'jacked.Injectable'):
         """
@@ -46,16 +46,28 @@ class Container:
         :param hint: a type hint that describes the object.
         :return: an instance for that hint or None.
         """
-        return self._instances.get(hint, None)
 
-    def set_instance(self, hint: object, instance: object):
+        inst, _ = self._instances.get(hint, (None, None))
+        return inst
+
+    def set_instance(
+            self,
+            hint: object,
+            instance: 'jacked.Injectable',
+            priority: int = 0):
         """
-        Set an instance for a type hint.
+        Set an instance for a type hint. If there already is an instance and
+        the given priority is lesser than or equal to the priority of the
+        existing instance, then the given instance will NOT override the
+        existing.
         :param hint: a type hint that describes the object.
         :param instance: an instance for that hint.
+        :param priority: the priority of the instance.
         :return: None.
         """
-        self._instances[hint] = instance
+        _, prio_existing = self._instances.get(hint, (None, -1))
+        if priority > prio_existing:
+            self._instances[hint] = (instance, priority)
 
 
 DEFAULT_CONTAINER = Container()
